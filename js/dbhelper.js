@@ -13,17 +13,30 @@ class DBHelper {
     return `http://localhost:${port}/restaurants/`;
   }
 
+
+
   /**
    * Fetch all restaurants.
    */
-  static fetchRestaurants(callback) {
+  static fetchRestaurantsFromServer(callback) {
     fetch( DBHelper.DATABASE_URL, {headers: {}} )
       .then(response => response.json())
-      .then(function(restaurants){ return callback(null, restaurants)})
-      .catch(function(error) {
+      .then(restaurants => callback(null, restaurants) )
+      .catch(error => {
         console.error("Fetch return error");
         callback(error, null);
       });
+  }
+
+  static fetchRestaurants(callback) {
+    var dbPromise = idb.open('restaurantsAppDB');
+
+    dbPromise.then(function(db) {
+      var tx = db.transaction('restaurants', 'readonly');
+      var store = tx.objectStore('restaurants');
+      console.log(store.getAll());
+      return store.getAll();
+    }).then(restaurants => callback(null, restaurants));
   }
 
   /**

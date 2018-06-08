@@ -26,6 +26,8 @@ gulp.task('styles', () =>
 
 gulp.task('scripts', function() {
     return gulp.src([
+        'js/idb.js',
+        'js/init.js',
         'js/dbhelper.js',
         'js/main.js',
         'js/restaurant_info.js'

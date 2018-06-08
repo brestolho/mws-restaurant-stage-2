@@ -1,8 +1,8 @@
 let restaurants,
   neighborhoods,
-  cuisines
-var map
-var markers = []
+  cuisines;
+let map;
+let markers = [];
 
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
@@ -13,9 +13,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
 });
 
 
+
+
 lazyLoadingImages = () => {
   let lazyImages = [].slice.call(document.querySelectorAll("img.lazy"));
-  console.log(lazyImages);
   let active = false;
 
   const lazyLoad = function() {
@@ -24,9 +25,7 @@ lazyLoadingImages = () => {
 
       setTimeout(function() {
         lazyImages.forEach(function(lazyImage) {
-          console.log(lazyImage);
           if ((lazyImage.getBoundingClientRect().top <= window.innerHeight && lazyImage.getBoundingClientRect().bottom >= 0) && getComputedStyle(lazyImage).display !== "none") {
-            console.log("entrei");
             lazyImage.src = lazyImage.dataset.src;
             lazyImage.srcset = lazyImage.dataset.srcset;
             lazyImage.classList.remove("lazy");
@@ -48,7 +47,10 @@ lazyLoadingImages = () => {
     }
   };
 
-  document.addEventListener("scroll", lazyLoad);
+  document.addEventListener("scroll", lazyLoad, {
+    capture: true,
+    passive: true
+  });
   window.addEventListener("resize", lazyLoad);
   window.addEventListener("orientationchange", lazyLoad);
 }
@@ -158,7 +160,10 @@ resetRestaurants = (restaurants) => {
   ul.innerHTML = '';
 
   // Remove all map markers
-  self.markers.forEach(m => m.setMap(null));
+  //self.markers.forEach(m => m.setMap(null));
+  for ( let marker in self.markers ) {
+    marker.setMap(null);
+  }
   self.markers = [];
   self.restaurants = restaurants;
 }
@@ -225,21 +230,3 @@ addMarkersToMap = (restaurants = self.restaurants) => {
 }
 
 
-
-/**
- * Service Worker
- */
-function registerServiceWorker() {
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('/sw.js',  {scope: '/'}).then(function(reg) {
-        return;
-      }).catch(function(err) {
-        console.log('ServiceWorker registration failed!');
-      });
-    });
-  } else {
-    return;
-  }
-}
-registerServiceWorker();
