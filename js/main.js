@@ -12,6 +12,48 @@ document.addEventListener('DOMContentLoaded', (event) => {
   fetchCuisines();
 });
 
+
+lazyLoadingImages = () => {
+  let lazyImages = [].slice.call(document.querySelectorAll("img.lazy"));
+  console.log(lazyImages);
+  let active = false;
+
+  const lazyLoad = function() {
+    if (active === false) {
+      active = true;
+
+      setTimeout(function() {
+        lazyImages.forEach(function(lazyImage) {
+          console.log(lazyImage);
+          if ((lazyImage.getBoundingClientRect().top <= window.innerHeight && lazyImage.getBoundingClientRect().bottom >= 0) && getComputedStyle(lazyImage).display !== "none") {
+            console.log("entrei");
+            lazyImage.src = lazyImage.dataset.src;
+            lazyImage.srcset = lazyImage.dataset.srcset;
+            lazyImage.classList.remove("lazy");
+
+            lazyImages = lazyImages.filter(function(image) {
+              return image !== lazyImage;
+            });
+
+            if (lazyImages.length === 0) {
+              document.removeEventListener("scroll", lazyLoad);
+              window.removeEventListener("resize", lazyLoad);
+              window.removeEventListener("orientationchange", lazyLoad);
+            }
+          }
+        });
+
+        active = false;
+      }, 200);
+    }
+  };
+
+  document.addEventListener("scroll", lazyLoad);
+  window.addEventListener("resize", lazyLoad);
+  window.addEventListener("orientationchange", lazyLoad);
+}
+
+
 /**
  * Fetch all neighborhoods and set their HTML.
  */
@@ -130,6 +172,7 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
     ul.append(createRestaurantHTML(restaurant));
   });
   addMarkersToMap();
+  lazyLoadingImages();
 }
 
 /**
@@ -139,9 +182,12 @@ createRestaurantHTML = (restaurant) => {
   const li = document.createElement('li');
 
   const image = document.createElement('img');
-  image.className = 'restaurant-img';
+  image.className = 'restaurant-img lazy';
   image.alt = `${restaurant.name} restaurant, ${restaurant.cuisine_type} cuisine in ${restaurant.neighborhood}`;
-  image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  //image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  image.src = `img/lazy.png`;//DBHelper.imageUrlForRestaurant{restaurant};
+  image.dataset.src = DBHelper.imageUrlForRestaurant(restaurant);
+  image.dataset.srcset = `img/${restaurant.id}_sm.jpg 300w`;
   li.append(image);
 
   const name = document.createElement('h3');
